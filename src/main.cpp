@@ -2,6 +2,7 @@
 #include <WiFi.h>
 #include <WiFiUdp.h>
 #include <ESP32Servo.h>
+#include <camera_server.h>
 
 #define ESC_PIN 9 // Use a PWM pin
 #define SERVO_PIN 10 // Use a PWM pin
@@ -9,6 +10,8 @@
 // WiFi credentials
 const char* ssid = "Lagemaat-4";
 const char* password = "CEBT3KT8VUTX";
+
+CameraServer cameraServer;
 
 // UDP parameters
 WiFiUDP udp;
@@ -27,12 +30,13 @@ const int servoPwmFrequency = 50; // PWM frequency for servo
 const int servoMinPulse = 500; // Minimum throttle (0.5 ms)
 const int servoMaxPulse = 2500; // Maximum throttle (2.5 ms)
 
-void armESC(int waitTimeSeconds) {
-    Serial.println("Arming the ESC...");
-    esc.writeMicroseconds(1510);  // Neutral throttle
-    delay(waitTimeSeconds * 1000);  // Wait for ESC to acknowledge throttle
-    Serial.println("ESC is armed!");
-}
+// Arming not necessary, can be done manually by user.
+// void armESC(int waitTimeSeconds) {
+//     Serial.println("Arming the ESC...");
+//     esc.writeMicroseconds(1510);  // Neutral throttle
+//     delay(waitTimeSeconds * 1000);  // Wait for ESC to acknowledge throttle
+//     Serial.println("ESC is armed!");
+// }
 
 void splitString(const char* input, char delimiter, char* part1, char* part2) {
   // Find the delimiter in the input string
@@ -54,8 +58,11 @@ void splitString(const char* input, char delimiter, char* part1, char* part2) {
 }
 
 void setup() {
-  delay(2000); // Delay for 2 seconds to allow time to open the Serial Monitor
+  // delay(2000); // Delay for 2 seconds to allow time to open the Serial Monitor
   Serial.begin(115200);
+  Serial.setDebugOutput(false);
+
+  cameraServer.setup();
 
   // Connect to Wi-Fi
   Serial.println("Connecting to Wi-Fi...");
@@ -68,6 +75,8 @@ void setup() {
   Serial.print("IP Address: ");
   Serial.println(WiFi.localIP());
 
+  cameraServer.startCameraServer(); // this runs on a different core ???
+
   // Start listening for UDP packets
   if (udp.begin(localPort)) {
     Serial.print("Listening on UDP port ");
@@ -78,7 +87,7 @@ void setup() {
 
   esc.setPeriodHertz(escPwmFrequency); // PWM frequency for ESC
   esc.attach(ESC_PIN, escMinPulse, escMaxPulse); // Attach ESC to the same pin
-  armESC(5); // Arm the ESC
+  // armESC(5); // Arm the ESC
 
   servo.setPeriodHertz(servoPwmFrequency); // PWM frequency for SG90
   servo.attach(SERVO_PIN, servoMinPulse, servoMaxPulse); // Minimum and maximum pulse width (in µs) to go from 0° to 180
