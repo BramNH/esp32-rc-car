@@ -4,8 +4,8 @@
 #include <ESP32Servo.h>
 #include <camera_server.h>
 
-#define ESC_PIN 9 // Use a PWM pin
-#define SERVO_PIN 10 // Use a PWM pin
+#define ESC_PIN 13 // Use a PWM pin
+#define SERVO_PIN 14 // Do not use pin 16 on ESP32CAM!
 
 // WiFi credentials
 const char* ssid = "Lagemaat-4";
@@ -45,6 +45,7 @@ void splitString(const char* input, char delimiter, char* part1, char* part2) {
   if (delimiterPos != NULL) {
       // Calculate the length of the first part and copy it
       size_t lenPart1 = delimiterPos - input;
+
       strncpy(part1, input, lenPart1);
       part1[lenPart1] = '\0'; // Null-terminate the first part
 
@@ -106,8 +107,8 @@ void loop() {
                   udp.remoteIP().toString().c_str(), udp.remotePort());
     Serial.printf("Contents: %s\n", incomingPacket);
 
-    char servoString[3];
-    char motorString[3];
+    char servoString[4];
+    char motorString[4];
     splitString(incomingPacket, ',', servoString, motorString);
     int servoAngle = atoi(servoString);
     int motorSpeed = atoi(motorString);

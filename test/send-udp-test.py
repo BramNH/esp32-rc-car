@@ -2,7 +2,7 @@ import socket
 import keyboard
 import time
 
-udp_ip = "192.168.1.144"
+udp_ip = "192.168.1.225"
 udp_port = 12345
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
