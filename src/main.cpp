@@ -1,15 +1,17 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <WiFiUdp.h>
+#include <WiFiManager.h>
 #include <ESP32Servo.h>
 #include <camera_server.h>
 
 #define ESC_PIN 13 // Use a PWM pin
 #define SERVO_PIN 14 // Do not use pin 16 on ESP32CAM!
 
-// WiFi credentials
-const char* ssid = "Lagemaat-4";
-const char* password = "CEBT3KT8VUTX";
+// ESP AP credentials
+const char* ssid = "ESP32-RC-Car";
+const char* password = "password";
+WiFiManager wm;
 
 CameraServer cameraServer;
 
@@ -63,19 +65,16 @@ void setup() {
   Serial.begin(115200);
   Serial.setDebugOutput(false);
 
-  cameraServer.setup();
-
-  // Connect to Wi-Fi
-  Serial.println("Connecting to Wi-Fi...");
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(1000);
-    Serial.print(".");
+  bool res;
+  res = wm.autoConnect(ssid, password); // password protected ap
+  if(!res) {
+      Serial.println("Failed to connect");
+  } 
+  else {  
+      Serial.println("Successfully connected to WiFi.");
   }
-  Serial.println("\nWi-Fi connected.");
-  Serial.print("IP Address: ");
-  Serial.println(WiFi.localIP());
 
+  cameraServer.setup();
   cameraServer.startCameraServer(); // this runs on a different core ???
 
   // Start listening for UDP packets
@@ -106,6 +105,11 @@ void loop() {
     Serial.printf("Received packet of size %d from %s:%d\n", packetSize, 
                   udp.remoteIP().toString().c_str(), udp.remotePort());
     Serial.printf("Contents: %s\n", incomingPacket);
+
+    if (incomingPacket[0] == 'r') {
+      wm.resetSettings();
+      ESP.restart();
+    }
 
     char servoString[4];
     char motorString[4];

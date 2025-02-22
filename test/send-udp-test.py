@@ -20,6 +20,10 @@ previousSpeed = currentSpeed
 previousAngle = currentAngle
 
 while True:
+    if keyboard.is_pressed("r"):
+        # This is for resetting the WiFi connection on the ESP32
+        sock.sendto(f"r".encode(), (udp_ip, udp_port))
+
     if not (keyboard.is_pressed("up") or keyboard.is_pressed("down")):
         currentSpeed = neutral
     if not (keyboard.is_pressed("left") or keyboard.is_pressed("right")):
